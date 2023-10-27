@@ -1,5 +1,6 @@
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
+#include <stdio.h>
 
 // Define the UART ID and GPIO pins
 #define UART_ID uart0
@@ -29,29 +30,29 @@ void uart_send_at_command(const char *command)
 }
 
 // Function to configure the E32-900T30D
-void configure_module() 
-{
-    // Set M0 and M1 pins to enter configuration mode
-    set_parameter_setting_mode(true);
+// void configure_module() 
+// {
+//     // Set M0 and M1 pins to enter configuration mode
+//     set_parameter_setting_mode(true);
 
-    // Set Baud Rate to 9600 bps
-    uart_send_at_command("AT+UART=8,E,1,9600");
+//     // Set Baud Rate to 9600 bps
+//     uart_send_at_command("AT+UART=8,E,1,9600");
 
-    // Set Address
-    uart_send_at_command("AT+ADDR=01");
+//     // Set Address
+//     uart_send_at_command("AT+ADDR=01");
 
-    // Set Frequency (adjust values as needed)
-    uart_send_at_command("AT+CFG=433.5,10,6,1,0,0");
+//     // Set Frequency (adjust values as needed)
+//     uart_send_at_command("AT+CFG=433.5,10,6,1,0,0");
 
-    // Set Transmission Mode to Fixed
-    uart_send_at_command("AT+TMOD=0");
+//     // Set Transmission Mode to Fixed
+//     uart_send_at_command("AT+TMOD=0");
 
-    // Save Configurations
-    uart_send_at_command("AT+SAVE");
+//     // Save Configurations
+//     uart_send_at_command("AT+SAVE");
 
-    // Set M0 and M1 pins to exit configuration mode
-    set_parameter_setting_mode(false);
-}
+//     // Set M0 and M1 pins to exit configuration mode
+//     set_parameter_setting_mode(false);
+// }
 
 // Function to send data over UART
 void uart_send_data(const char *data) 
@@ -72,12 +73,16 @@ int main()
     // gpio_set_pulls(BTN_PIN, true, false);
 
     // Configure the module
-    configure_module();
+    // configure_module();
 
     while (true) 
     {
-        // Send "Hello, World"
-        uart_send_data("Hello, World\n");
+        if (uart_is_writable(UART_ID)) 
+        {
+            printf("Sending: Hello, World\n");
+            // Send "Hello, World"
+            uart_send_data("Hello, World\n");
+        }
 
         sleep_ms(1000);  // Adjust the delay as needed
     }
