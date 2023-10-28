@@ -20,7 +20,10 @@ pico_sdk_init()
 add_executable(lora_driver lora_driver.c)
 
 # pull in common dependencies
-target_link_libraries(lora_driver pico_stdlib)
+target_link_libraries(lora_driver 
+                        pico_stdlib
+                        pico_cyw43_arch_none
+                    )
 
 # Enables outputs on the serial monitor
 pico_enable_stdio_usb(lora_driver 1)

@@ -4,87 +4,102 @@
 
 // Define the UART ID and GPIO pins
 #define UART_ID uart0
-#define TX_PIN 0
-#define RX_PIN 1
-#define AUX_PIN 2
+#define TX_PIN 0    // Connect to RX on EBYTE module
+#define RX_PIN 1    // Connect to TX on EBYTE module
+#define AUX_PIN 16
 
 // Define the GPIO pins for M0 and M1
 #define M0_PIN 3
 #define M1_PIN 4
 
-// Function to set M0 and M1 pins to enter/exit parameter setting mode (sleep mode)
-void set_parameter_setting_mode(bool enable) 
+// Define module modes
+#define NORMAL_MODE 0
+#define WAKEUP_MODE 1
+#define POWERSAVING_MODE 2
+#define SLEEP_MODE 3
+
+#define BAUD_RATE 9600
+
+// Function to change the mode of the module
+void change_mode(int mode) 
 {
-    gpio_put(M0_PIN, enable ? 1 : 0);
-    gpio_put(M1_PIN, enable ? 1 : 0);
-
-    // Wait for the module to enter sleep mode
-    sleep_ms(1000);
-}
-
-// Function to send AT commands over UART
-void uart_send_at_command(const char *command) 
-{
-    uart_puts(UART_ID, command);
-    uart_puts(UART_ID, "\r\n");  // Send carriage return and line feed for proper command termination
-}
-
-// Function to configure the E32-900T30D
-// void configure_module() 
-// {
-//     // Set M0 and M1 pins to enter configuration mode
-//     set_parameter_setting_mode(true);
-
-//     // Set Baud Rate to 9600 bps
-//     uart_send_at_command("AT+UART=8,E,1,9600");
-
-//     // Set Address
-//     uart_send_at_command("AT+ADDR=01");
-
-//     // Set Frequency (adjust values as needed)
-//     uart_send_at_command("AT+CFG=433.5,10,6,1,0,0");
-
-//     // Set Transmission Mode to Fixed
-//     uart_send_at_command("AT+TMOD=0");
-
-//     // Save Configurations
-//     uart_send_at_command("AT+SAVE");
-
-//     // Set M0 and M1 pins to exit configuration mode
-//     set_parameter_setting_mode(false);
-// }
-
-// Function to send data over UART
-void uart_send_data(const char *data) 
-{
-    uart_puts(UART_ID, data);
+    switch (mode)
+    {
+        case 0:
+            // Set M0 and M1 pins to LOW
+            gpio_put(M0_PIN, 0);
+            gpio_put(M1_PIN, 0);
+            break;
+        case 1:
+            // Set M0 pin to HIGH and M1 pin to LOW
+            gpio_put(M0_PIN, 1);
+            gpio_put(M1_PIN, 0);
+            break;
+        case 2:
+            // Set M0 pin to LOW and M1 pin to HIGH
+            gpio_put(M0_PIN, 0);
+            gpio_put(M1_PIN, 1);
+            break;
+        case 3:
+            // Set M0 and M1 pins to HIGH
+            gpio_put(M0_PIN, 1);
+            gpio_put(M1_PIN, 1);
+            break;
+        default:
+            // Invalid mode, do nothing
+            break;
+    }
 }
 
 int main() 
 {
     stdio_init_all();
 
-    // Initialize the UART interface
-    uart_init(UART_ID, 9600);
+    // Initialize UART with desired settings
+    uart_init(UART_ID, BAUD_RATE);
     gpio_set_function(TX_PIN, GPIO_FUNC_UART);
     gpio_set_function(RX_PIN, GPIO_FUNC_UART);
+    uart_set_hw_flow(UART_ID, false, false);
+    
+    // Disable FIFO
+    uart_set_fifo_enabled(UART_ID, false);
 
-    // gpio_set_dir(AUX_PIN, GPIO_IN);
-    // gpio_set_pulls(BTN_PIN, true, false);
+    gpio_init(M0_PIN);
+    gpio_set_dir(M0_PIN, GPIO_OUT);
 
-    // Configure the module
-    // configure_module();
+    gpio_init(M1_PIN);
+    gpio_set_dir(M1_PIN, GPIO_OUT);
 
-    while (true) 
+    // AUX pin on the module is an output pin so we set GPIO as input
+    gpio_init(AUX_PIN);
+    gpio_set_dir(AUX_PIN, GPIO_IN);
+
+    // Setting module in normal mode
+    change_mode(NORMAL_MODE);
+
+    while (1) 
     {
-        if (uart_is_writable(UART_ID)) 
+        // Send data to the E32 module
+        uart_puts(UART_ID, "Hello, E32!\r\n");
+
+        // Read the state of the AUX pin
+        bool aux_state = gpio_get(AUX_PIN);
+
+        /*
+            AUX = high (1) - no data in the buffer
+            AUX = low (0)  - data in the buffer
+        */
+        if (aux_state) 
         {
-            printf("Sending: Hello, World\n");
-            // Send "Hello, World"
-            uart_send_data("Hello, World\n");
+            printf("AUX pin is high\n");
+        } 
+        else 
+        {
+            printf("AUX pin is low\n");
         }
 
-        sleep_ms(1000);  // Adjust the delay as needed
+        // Wait for a short time before sending more data
+        sleep_ms(1000);
     }
 
     return 0;
