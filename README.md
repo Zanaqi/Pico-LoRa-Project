@@ -1,8 +1,6 @@
 # Pico-LoRa
-For my end, I have the **project** folder into **pico-examples** and added:
-```
-add_subdirectory(project)
-```
-into the **CMakeLists.txt** in the main **pico-examples** directory
+## Block Diagram
+![Block Diagram](docs\Pico-LoRA Block Diagram.png)
 
-*ps. there's probably a better way of doing this idk*
+## Flowchart
+![Flowchart](docs\Pico-LoRa Flowchart.png)
