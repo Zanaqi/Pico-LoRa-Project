@@ -1,11 +1,12 @@
 #include <stdio.h>
-
 #include "pico/stdlib.h"
 #include "hardware/uart.h"
+#include "hardware/i2c.h"
 
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "task.h"
+#include "ssd1306.h"
 
 // Define the UART ID and GPIO pins
 #define UART_ID uart0
@@ -15,6 +16,8 @@
 #define M1_PIN 4
 #define AUX_PIN 16
 #define BTN_PIN 20
+#define SDA_PIN 6
+#define SCL_PIN 7
 
 // Define module modes
 #define NORMAL_MODE 0
@@ -191,6 +194,25 @@ void receive_msg_hex()
     // }
 }
 
+void print_on_oled()
+{
+    const char *words[]= {"SSD1306", "DISPLAY", "DRIVER"};
+
+    ssd1306_t disp;
+    disp.external_vcc=false;
+    ssd1306_init(&disp, 128, 64, 0x3C, i2c1);
+    ssd1306_clear(&disp);
+
+    for(int i=0; i<sizeof(words)/sizeof(char *); ++i) {
+        ssd1306_draw_string(&disp, 8, 24, 1, words[i]);
+        ssd1306_show(&disp);
+        sleep_ms(1000);
+        ssd1306_clear(&disp);
+        printf("I'm printing");
+
+    }
+}
+
 int main()
 {
     stdio_init_all();
@@ -216,24 +238,48 @@ int main()
     gpio_init(BTN_PIN);
     gpio_set_dir(BTN_PIN, GPIO_IN);
 
-    change_mode(SLEEP_MODE);
-    sleep_ms(5000);
-    get_current_config();
-    sleep_ms(5000);
-    set_config();   
+    gpio_pull_up(BTN_PIN);
 
-    sleep_ms(5000);
+    //Initialize I2C for OLED
+    i2c_init(i2c1, 400000);
+    gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
+    gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
+
+    sleep_ms(3000);
+
+    change_mode(SLEEP_MODE);
+    sleep_ms(1000);
+    get_current_config();
+    sleep_ms(1000);
+    set_config();   
+    sleep_ms(1000);
     flush_buffer();
     change_mode(NORMAL_MODE);
     sleep_ms(2);
 
+    printf("Config Done\n");
+
     // broadcast_msg();
 
-    // gpio_set_irq_enabled_with_callback(BTN_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &broadcast_msg);
+    // gpio_set_irq_enabled_with_callback(BTN_PIN, GPIO_IRQ_EDGE_RISE | GPIO_IRQ_EDGE_FALL, true, &print_on_oled);
 
     while (1)
     {
-        receive_msg_hex();
+        const char *words[]= {"SSD1306", "DISPLAY", "DRIVER"};
+
+        ssd1306_t disp;
+        disp.external_vcc=false;
+        ssd1306_init(&disp, 128, 64, 0x3C, i2c1);
+        ssd1306_clear(&disp);
+
+        printf("I'm printing");
+        for(int i=0; i<sizeof(words)/sizeof(char *); ++i) {
+            ssd1306_draw_string(&disp, 8, 24, 1, words[i]);
+            ssd1306_show(&disp);
+            sleep_ms(1000);
+            ssd1306_clear(&disp);
+        }
+        // receive_msg_hex();
     }
 
     return 0;
