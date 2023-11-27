@@ -1,17 +1,19 @@
-add_executable(${ProjectName}
+# Start of lora_driver
+add_executable(lora_driver
     lora_driver.c
 )
 
-target_include_directories(${ProjectName} PRIVATE
+target_include_directories(lora_driver PRIVATE
     ${CMAKE_CURRENT_LIST_DIR}
 )
 
-target_link_libraries(${ProjectName} 
+target_link_libraries(lora_driver 
     pico_stdlib 
     FreeRTOS-Kernel-Heap4 
 )
 
 # Enables outputs on the serial monitor
-pico_enable_stdio_usb(${ProjectName} 1)
+pico_enable_stdio_usb(lora_driver 1)
 
-pico_add_extra_outputs(${ProjectName})
+pico_add_extra_outputs(lora_driver)
+# End of lora_driver
