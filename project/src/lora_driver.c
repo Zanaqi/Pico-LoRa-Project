@@ -238,8 +238,6 @@ int main()
     gpio_init(BTN_PIN);
     gpio_set_dir(BTN_PIN, GPIO_IN);
 
-    gpio_pull_up(BTN_PIN);
-
     //Initialize I2C for OLED
     i2c_init(i2c1, 400000);
     gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
