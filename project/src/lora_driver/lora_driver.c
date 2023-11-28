@@ -10,14 +10,14 @@
 
 // Define the UART ID and GPIO pins
 #define UART_ID uart0
+#define OLED_UART_ID uart1
 #define TX_PIN 0 // Connect to RX on EBYTE module
 #define RX_PIN 1 // Connect to TX on EBYTE module
 #define M0_PIN 3
 #define M1_PIN 4
 #define AUX_PIN 16
 #define BTN_PIN 20
-#define SDA_PIN 6
-#define SCL_PIN 7
+#define OLED_TX_PIN 8
 
 // Define module modes
 #define NORMAL_MODE 0
@@ -25,7 +25,7 @@
 #define POWERSAVING_MODE 2
 #define SLEEP_MODE 3
 
-#define BAUD_RATE 9600
+#define BAUD_RATE 115200
 
 #define DEBOUNCE_50MS 50000 
 
@@ -182,6 +182,7 @@ void receive_msg_hex()
     uint8_t rxbuffer[1];
     uart_read_blocking(UART_ID, rxbuffer, 1);
     printf("%s", rxbuffer);
+    uart_putc_raw(OLED_UART_ID, rxbuffer);
     // for (int i = 0; i < sizeof(rxbuffer) / sizeof(uint8_t); i++)
     // {
     //     printf("%d ", rxbuffer[i]);
@@ -224,6 +225,11 @@ int main()
     uart_set_hw_flow(UART_ID, false, false);
     uart_set_format(UART_ID, 8, 1, UART_PARITY_NONE);
 
+    uart_init(OLED_UART_ID, BAUD_RATE);
+    gpio_set_function(OLED_TX_PIN, GPIO_FUNC_UART);
+    uart_set_hw_flow(OLED_UART_ID, false, false);
+    uart_set_format(OLED_UART_ID, 8, 1, UART_PARITY_NONE);
+
     gpio_init(M0_PIN);
     gpio_set_dir(M0_PIN, GPIO_OUT);
 
@@ -237,13 +243,6 @@ int main()
     // Initializing a button at GP20
     gpio_init(BTN_PIN);
     gpio_set_dir(BTN_PIN, GPIO_IN);
-
-    //Initialize I2C for OLED
-    i2c_init(i2c1, 400000);
-    gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
-    gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
-
-    sleep_ms(3000);
 
     change_mode(SLEEP_MODE);
     sleep_ms(1000);
@@ -263,20 +262,6 @@ int main()
 
     while (1)
     {
-        const char *words[]= {"SSD1306", "DISPLAY", "DRIVER"};
-
-        ssd1306_t disp;
-        disp.external_vcc=false;
-        ssd1306_init(&disp, 128, 64, 0x3C, i2c1);
-        ssd1306_clear(&disp);
-
-        printf("I'm printing");
-        for(int i=0; i<sizeof(words)/sizeof(char *); ++i) {
-            ssd1306_draw_string(&disp, 8, 24, 1, words[i]);
-            ssd1306_show(&disp);
-            sleep_ms(1000);
-            ssd1306_clear(&disp);
-        }
         // receive_msg_hex();
     }
 
