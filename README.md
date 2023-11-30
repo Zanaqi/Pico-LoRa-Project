@@ -1,8 +1,11 @@
 # Pico-LoRa
 ## Features
 Set-up and configuration of nodes
-Fixed transmission between two nodes. 
+
+Fixed transmission between two nodes
+
 Broadcast transmission to nodes on same channel
+
 Message display on OLED
 
 
@@ -38,36 +41,56 @@ Message display on OLED
 
 
 ## Transmission, Addresses & Channels
-Address Format:
+**Message / Address Format:**
+
 Address High | Address Low | Channel | Message Content
+
 00 01 04 Hello world!
 
-Transparent Transmission:
+**Transparent Transmission:**
+
 All nodes have save address and channel. All nodes can send/receive to/from each other. Message do not need to be prefixed with address and channel bytes.
 
-Fixed Transmission:
+**Fixed Transmission:**
+
 Ensure that module is configured to Fixed Transmission Mode in Options. E.g. 0xC4 (11000100)
 Nodes can have different addresses and channels. Messages sent must be prefixed with address and channel of the destination node. 
 E.g. 
-NODE A -> NODE B
+
+_NODE A -> NODE B_
+
 NODE A ADDRESS: 00 01 06 {Message Content}
+
 NODE A's MESSAGE: 00 03 04
+
 NODE B ADDRESS: 00 03 04
 
-Broadcast Transmission:
+**Broadcast Transmission:**
+
 A singular node can broadcast message to all nodes on the same channel. Broadcast message must be prefixed with address FFFF and a channel. Additionally, nodes with FFFF address can receive messages from any nodes of any address and the same channel.
 E.g.
-NODE A -> NODE B + NODE C
+
+_NODE A -> NODE B + NODE C_
+
 NODE A ADDRESS: 00 01 04
+
 NODE A's MESSAGE: FF FF 04
+
 NODE B ADDRESS: 00 02 04
+
+NODE C ADDRESS: 00 03 04
+--------------------------
+
+_NODE B -> NODE C + NODE A_
+
+NODE B ADDRESS: 00 02 04
+
+NODE B's MESSAGE: 00 03 04 {Message Content}
+
 NODE C ADDRESS: 00 03 04
 
-NODE B -> NODE C + NODE A
-NODE B ADDRESS: 00 02 04
-NODE B's MESSAGE: 00 03 04 {Message Content}
-NODE C ADDRESS: 00 03 04
 NODE A ADDRESS: FF FF 04
+
 
 
 ## Block Diagram
