@@ -8,8 +8,9 @@
 // OLED Library
 #include "ssd1306.h"
 
-// Define the UART IDs and GPIO pins
+// Define the UART ID and GPIO pins
 #define UART_ID uart0
+#define I2C_ID i2c1
 #define TX_PIN 0 // Connect to RX on EBYTE module
 #define RX_PIN 1 // Connect to TX on EBYTE module
 #define M0_PIN 4
@@ -365,14 +366,14 @@ void init_config()
     gpio_set_dir(SEND_MODULE_2_BTN_PIN, GPIO_IN);
 
     // Initialize I2C for OLED
-    i2c_init(i2c1, OLED_BAUD_RATE);
+    i2c_init(I2C_ID, OLED_BAUD_RATE);
     gpio_set_function(SDA_PIN, GPIO_FUNC_I2C);
     gpio_set_function(SCL_PIN, GPIO_FUNC_I2C);
 
     const char configMsg[] = "CONFIG DONE";
 
     disp.external_vcc=false;
-    ssd1306_init(&disp, 128, 64, 0x3C, i2c1);
+    ssd1306_init(&disp, 128, 64, 0x3C, I2C_ID);
     ssd1306_clear(&disp);
 
     ssd1306_draw_string(&disp, 30, 32, 1, configMsg);
