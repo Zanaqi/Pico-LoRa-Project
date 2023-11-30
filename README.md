@@ -74,12 +74,14 @@ _NODE A -> NODE B + NODE C_
 
 NODE A ADDRESS: 00 01 04
 
-NODE A's MESSAGE: FF FF 04
+NODE A's MESSAGE: FF FF 04 {Message Content}
 
 NODE B ADDRESS: 00 02 04
 
 NODE C ADDRESS: 00 03 04
---------------------------
+
+
+Another example:
 
 _NODE B -> NODE C + NODE A_
 
