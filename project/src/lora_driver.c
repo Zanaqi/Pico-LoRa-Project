@@ -10,7 +10,6 @@
 
 // Define the UART IDs and GPIO pins
 #define UART_ID uart0
-#define OLED_UART_ID uart1
 #define TX_PIN 0 // Connect to RX on EBYTE module
 #define RX_PIN 1 // Connect to TX on EBYTE module
 #define M0_PIN 4
@@ -18,7 +17,6 @@
 #define AUX_PIN 16
 #define SDA_PIN 6
 #define SCL_PIN 7
-#define OLED_TX_PIN 8
 
 // Define buttons
 #define BROADCAST_BTN_PIN 20
@@ -61,6 +59,7 @@ volatile int counter = 0;
 int xCursor = 0;
 int yCursor = 6;
 
+// Structure for OLED display configuration
 ssd1306_t disp;
 
 // Clears the modules buffer
@@ -278,14 +277,16 @@ void send_msg(uint gpio, uint32_t events)
     }
 }
 
-void draw_seperators(ssd1306_t *disp)
+// Draws line separators on OLED display to split into 4 rows
+void draw_separators()
 {
-    ssd1306_draw_line(disp, 0, 15, 127, 15);
-    ssd1306_draw_line(disp, 0, 31, 127, 31);
-    ssd1306_draw_line(disp, 0, 47, 127, 47);
-    ssd1306_draw_line(disp, 0, 63, 127, 63);
+    ssd1306_draw_line(&disp, 0, 15, 127, 15);
+    ssd1306_draw_line(&disp, 0, 31, 127, 31);
+    ssd1306_draw_line(&disp, 0, 47, 127, 47);
+    ssd1306_draw_line(&disp, 0, 63, 127, 63);
 }
 
+// Print data received from the RX_PIN
 void print_on_oled(char rxchar)
 {
     if(xCursor!=CHAR_LIMIT_X)
@@ -306,7 +307,7 @@ void print_on_oled(char rxchar)
         xCursor = 0;
         yCursor = 6;
         ssd1306_clear(&disp);
-        draw_seperators(&disp);
+        draw_separators();
         ssd1306_draw_char(&disp, xCursor, yCursor, 1, rxchar);
         ssd1306_show(&disp);
         xCursor += 8;
@@ -346,11 +347,6 @@ void init_config()
     uart_set_hw_flow(UART_ID, false, false);
     uart_set_format(UART_ID, 8, 1, UART_PARITY_NONE);
 
-    uart_init(OLED_UART_ID, 115200);
-    gpio_set_function(OLED_TX_PIN, GPIO_FUNC_UART);
-    uart_set_hw_flow(OLED_UART_ID, false, false);
-    uart_set_format(OLED_UART_ID, 8, 1, UART_PARITY_NONE);
-
     gpio_init(M0_PIN);
     gpio_set_dir(M0_PIN, GPIO_OUT);
     gpio_init(M1_PIN);
@@ -381,11 +377,7 @@ void init_config()
 
     ssd1306_draw_string(&disp, 30, 32, 1, configMsg);
     ssd1306_show(&disp);
-    sleep_ms(3000);
     ssd1306_clear(&disp);
-
-    draw_seperators(&disp);
-    ssd1306_show(&disp);
 }
 
 int main()
@@ -397,6 +389,8 @@ int main()
     set_config(NODE2_CONFIG);
     change_mode(NORMAL_MODE);
     flush_buffer();
+    draw_separators();
+    ssd1306_show(&disp);
 
     gpio_set_irq_enabled_with_callback(BROADCAST_BTN_PIN, GPIO_IRQ_EDGE_RISE, true, &send_msg);
     gpio_set_irq_enabled_with_callback(SEND_MODULE_1_BTN_PIN, GPIO_IRQ_EDGE_RISE, true, &send_msg);
