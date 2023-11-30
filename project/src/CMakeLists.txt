@@ -11,7 +11,6 @@ target_include_directories(lora_driver PRIVATE
 
 target_link_libraries(lora_driver 
     pico_stdlib 
-    FreeRTOS-Kernel-Heap4 
     hardware_i2c 
 )
 

@@ -6,12 +6,6 @@ include(pico_sdk_import.cmake)
 # Name project
 SET(ProjectName lora_driver)
 
-# Set any variables required for importing libraries
-SET(FREERTOS_KERNEL_PATH ${CMAKE_CURRENT_SOURCE_DIR}/lib/FreeRTOS-Kernel)
-
-# Import those libraries
-include(${FREERTOS_KERNEL_PATH}/portable/ThirdParty/GCC/RP2040/FreeRTOS_Kernel_import.cmake)
-
 # Define project
 project(${ProjectName})
 set(CMAKE_C_STANDARD 11)
